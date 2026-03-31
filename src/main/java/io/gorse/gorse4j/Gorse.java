@@ -57,21 +57,12 @@ public class Gorse {
     }
 
     /**
-     * Get recommendation for a user.
-     * @param userId User ID
-     * @return List of recommended item IDs
-     */
-    public List<String> getRecommend(String userId) throws IOException {
-        return List.of(this.request("GET", this.endpoint + "/api/recommend/" + userId, null, String[].class));
-    }
-
-    /**
      * Get recommendation with scores for a user.
      * Uses X-API-Version: 2 header to return scores.
      * @param userId User ID
      * @return List of Score objects with item IDs and scores
      */
-    public List<Score> getRecommendWithScores(String userId) throws IOException {
+    public List<Score> getRecommend(String userId) throws IOException {
         return List.of(this.requestWithHeaders("GET", this.endpoint + "/api/recommend/" + userId, null, Score[].class, 
             Map.of("X-API-Version", "2")));
     }
