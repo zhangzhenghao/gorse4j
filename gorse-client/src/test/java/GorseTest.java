@@ -88,4 +88,17 @@ public class GorseTest {
         Assert.assertEquals("1432", recommendations.get(1).getId());
         Assert.assertEquals("918", recommendations.get(2).getId());
     }
+
+    @Test
+    public void testRecommendMultipleCategories() throws IOException {
+        client.insertUser(new User("4000", null));
+        List<Score> recommendations = client.getRecommend(
+                "4000", List.of("Drama", "Comedy"), "recommend", "1h", 3, 0);
+        Assert.assertEquals(3, recommendations.size());
+        for (Score recommendation : recommendations) {
+            Item item = client.getItem(recommendation.getId());
+            Assert.assertTrue(item.getCategories().contains("Drama")
+                    || item.getCategories().contains("Comedy"));
+        }
+    }
 }

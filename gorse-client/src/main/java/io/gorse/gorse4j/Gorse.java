@@ -76,10 +76,59 @@ public class Gorse {
      * Uses X-API-Version: 2 header to return scores.
      * @param userId User ID
      * @return List of Score objects with item IDs and scores
+     * @throws IOException if the request fails
      */
     public List<Score> getRecommend(String userId) throws IOException {
-        return List.of(this.requestWithHeaders("GET", this.endpoint + "/api/recommend/" + userId, null, Score[].class, 
-            Map.of("X-API-Version", "2")));
+        return List.of(this.requestWithHeaders("GET",
+                this.endpoint + "/api/recommend/" + encodePathSegment(userId), null, Score[].class,
+                Map.of("X-API-Version", "2")));
+    }
+
+    /**
+     * Get recommendation with scores for a user.
+     * Uses X-API-Version: 2 header to return scores.
+     * @param userId User ID
+     * @param categories Categories used to filter recommendations
+     * @param writeBackType Feedback type used to write recommendations back, or null to disable write-back
+     * @param writeBackDelay Delay before writing recommendations back, or null for no delay
+     * @param n Number of recommendations
+     * @param offset Number of recommendations to skip
+     * @return List of Score objects with item IDs and scores
+     * @throws IOException if the request fails
+     */
+    public List<Score> getRecommend(String userId, List<String> categories, String writeBackType,
+                                    String writeBackDelay, int n, int offset) throws IOException {
+        StringBuilder url = new StringBuilder(this.endpoint)
+                .append("/api/recommend/")
+                .append(encodePathSegment(userId));
+        String separator = "?";
+        if (categories != null) {
+            for (String category : categories) {
+                separator = appendQueryParameter(url, separator, "category", category);
+            }
+        }
+        if (writeBackType != null) {
+            separator = appendQueryParameter(url, separator, "write-back-type", writeBackType);
+        }
+        if (writeBackDelay != null) {
+            separator = appendQueryParameter(url, separator, "write-back-delay", writeBackDelay);
+        }
+        separator = appendQueryParameter(url, separator, "n", Integer.toString(n));
+        appendQueryParameter(url, separator, "offset", Integer.toString(offset));
+        return List.of(this.requestWithHeaders("GET", url.toString(), null, Score[].class,
+                Map.of("X-API-Version", "2")));
+    }
+
+    private static String encodePathSegment(String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
+    }
+
+    private static String appendQueryParameter(StringBuilder url, String separator, String name, String value) {
+        url.append(separator)
+                .append(name)
+                .append('=')
+                .append(URLEncoder.encode(value, StandardCharsets.UTF_8));
+        return "&";
     }
 
     private <Request, Response> Response request(String method, String url, Request request, Class<Response> responseClass) throws IOException {
