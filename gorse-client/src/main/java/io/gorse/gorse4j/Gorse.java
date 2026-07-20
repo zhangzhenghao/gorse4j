@@ -88,33 +88,26 @@ public class Gorse {
      * Get recommendation with scores for a user.
      * Uses X-API-Version: 2 header to return scores.
      * @param userId User ID
-     * @param categories Categories used to filter recommendations
-     * @param writeBackType Feedback type used to write recommendations back, or null to disable write-back
-     * @param writeBackDelay Delay before writing recommendations back, or null for no delay
-     * @param n Number of recommendations
-     * @param offset Number of recommendations to skip
+     * @param options Recommendation options
      * @return List of Score objects with item IDs and scores
      * @throws IOException if the request fails
      */
-    public List<Score> getRecommend(String userId, List<String> categories, String writeBackType,
-                                    String writeBackDelay, int n, int offset) throws IOException {
+    public List<Score> getRecommend(String userId, RecommendOptions options) throws IOException {
         StringBuilder url = new StringBuilder(this.endpoint)
                 .append("/api/recommend/")
                 .append(encodePathSegment(userId));
         String separator = "?";
-        if (categories != null) {
-            for (String category : categories) {
-                separator = appendQueryParameter(url, separator, "category", category);
-            }
+        for (String category : options.getCategories()) {
+            separator = appendQueryParameter(url, separator, "category", category);
         }
-        if (writeBackType != null) {
-            separator = appendQueryParameter(url, separator, "write-back-type", writeBackType);
+        if (options.getWriteBackType() != null) {
+            separator = appendQueryParameter(url, separator, "write-back-type", options.getWriteBackType());
         }
-        if (writeBackDelay != null) {
-            separator = appendQueryParameter(url, separator, "write-back-delay", writeBackDelay);
+        if (options.getWriteBackDelay() != null) {
+            separator = appendQueryParameter(url, separator, "write-back-delay", options.getWriteBackDelay());
         }
-        separator = appendQueryParameter(url, separator, "n", Integer.toString(n));
-        appendQueryParameter(url, separator, "offset", Integer.toString(offset));
+        separator = appendQueryParameter(url, separator, "n", Integer.toString(options.getN()));
+        appendQueryParameter(url, separator, "offset", Integer.toString(options.getOffset()));
         return List.of(this.requestWithHeaders("GET", url.toString(), null, Score[].class,
                 Map.of("X-API-Version", "2")));
     }

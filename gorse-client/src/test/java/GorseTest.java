@@ -92,8 +92,14 @@ public class GorseTest {
     @Test
     public void testRecommendMultipleCategories() throws IOException {
         client.insertUser(new User("4000", null));
-        List<Score> recommendations = client.getRecommend(
-                "4000", List.of("Drama", "Comedy"), "recommend", "1h", 3, 0);
+        RecommendOptions options = RecommendOptions.builder()
+                .categories(List.of("Drama", "Comedy"))
+                .writeBackType("recommend")
+                .writeBackDelay("1h")
+                .n(3)
+                .offset(0)
+                .build();
+        List<Score> recommendations = client.getRecommend("4000", options);
         Assert.assertEquals(3, recommendations.size());
         for (Score recommendation : recommendations) {
             Item item = client.getItem(recommendation.getId());
